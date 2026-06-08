@@ -8,6 +8,22 @@ No accounts, no tokens, no network. It only reads the local git repo in front of
 
 ![license](https://img.shields.io/badge/license-MIT-blue) ![node](https://img.shields.io/badge/node-%3E%3D18-brightgreen)
 
+## Preview
+### Summary
+[summary](./images/image.png)
+
+### Repositories
+[repositories](./images/image-2.png)
+
+### Authors
+[authors](./images/image-3.png)
+
+### Languages
+[languages](./images/image-4.png)
+
+### Activity
+[activity](./images/image-5.png)
+
 ## Install
 
 ```bash
