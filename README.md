@@ -10,19 +10,19 @@ No accounts, no tokens, no network. It only reads the local git repo in front of
 
 ## Preview
 ### Summary
-[summary](./images/image.png)
+![summary](./images/image.png)
 
 ### Repositories
-[repositories](./images/image-2.png)
+![repositories](./images/image-2.png)
 
 ### Authors
-[authors](./images/image-3.png)
+![authors](./images/image-3.png)
 
 ### Languages
-[languages](./images/image-4.png)
+![languages](./images/image-4.png)
 
 ### Activity
-[activity](./images/image-5.png)
+![activity](./images/image-5.png)
 
 ## Install
 
