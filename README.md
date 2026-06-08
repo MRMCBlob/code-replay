@@ -31,6 +31,19 @@ cr                   # short alias
 code-replay ../other-project
 ```
 
+### Analyze every repo on your machine
+
+```bash
+code-replay --all                       # scan your home folder for repos
+code-replay --all --root D:\code        # scan a specific folder
+code-replay --all --author you          # your commits across all repos
+```
+
+`--all` walks the scan root (default: your home directory), finds every git repo,
+merges all their commits, and adds a **Repositories** table ranking them by churn.
+It skips `node_modules`, build folders and OS system dirs, and stops descending once
+it hits a repo. Tune the crawl with `--root <path>` and `--depth <n>`.
+
 It prints four sections:
 
 - **Summary** — commits, lines added/removed, net, churn, files touched, active days, date range.
@@ -47,7 +60,10 @@ It prints four sections:
 | `--until <date>` | Only commits before a date |
 | `--author <pattern>` | Filter by author name/email substring |
 | `--pathspec <path>` | Restrict to a subdirectory or file |
-| `--top <n>` | Max rows in author/language tables (default `10`) |
+| `--top <n>` | Max rows in author/language/repo tables (default `10`) |
+| `--all` | Scan every git repo on the machine and aggregate them |
+| `--root <path>` | With `--all`: folder to scan (default: home) |
+| `--depth <n>` | With `--all`: max folder depth to scan (default `7`) |
 | `--no-color` | Disable colored output |
 | `--version`, `--help` | Standard info |
 

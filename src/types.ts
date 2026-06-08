@@ -21,6 +21,8 @@ export interface Commit {
   files: FileChange[];
   added: number;
   removed: number;
+  /** Repo this commit came from (set when aggregating across many repos). */
+  repo?: string;
 }
 
 /** Options controlling which commits git returns. */
@@ -81,4 +83,14 @@ export interface Timeline {
   perWeekday: number[];
   /** Commit count per hour, index 0..23. */
   perHour: number[];
+}
+
+export interface RepoStat {
+  repo: string;
+  commits: number;
+  added: number;
+  removed: number;
+  churn: number;
+  /** Share of total churn, 0..1. */
+  share: number;
 }

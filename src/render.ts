@@ -3,6 +3,7 @@ import Table from "cli-table3";
 import type {
   AuthorStat,
   LanguageStat,
+  RepoStat,
   Timeline,
   Totals,
 } from "./types.js";
@@ -101,6 +102,32 @@ export function renderLanguages(langs: LanguageStat[], top: number): string {
   const hidden = langs.length - Math.min(top, langs.length);
   const footer = hidden > 0 ? chalk.gray(`\n  …and ${hidden} more`) : "";
   return `${heading("Languages")}\n${table.toString()}${footer}`;
+}
+
+export function renderRepos(repos: RepoStat[], top: number): string {
+  const table = new Table({
+    head: ["#", "Repository", "Commits", "Added", "Removed", "Share"].map((h) =>
+      chalk.bold(h),
+    ),
+    chars: dimChars(),
+    style: { head: [], border: [] },
+    colAligns: ["right", "left", "right", "right", "right", "left"],
+  });
+
+  repos.slice(0, top).forEach((r, i) => {
+    table.push([
+      String(i + 1),
+      truncate(r.repo, 28),
+      n(r.commits),
+      chalk.green(`+${n(r.added)}`),
+      chalk.red(`-${n(r.removed)}`),
+      `${bar(r.share, 10)} ${pct(r.share)}`,
+    ]);
+  });
+
+  const hidden = repos.length - Math.min(top, repos.length);
+  const footer = hidden > 0 ? chalk.gray(`\n  …and ${hidden} more`) : "";
+  return `${heading("Repositories")}\n${table.toString()}${footer}`;
 }
 
 export function renderTimeline(tl: Timeline): string {

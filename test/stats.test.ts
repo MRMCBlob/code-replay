@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeAuthors, computeTotals } from "../src/stats.js";
+import { computeAuthors, computeRepos, computeTotals } from "../src/stats.js";
 import type { Commit } from "../src/types.js";
 
 function commit(p: Partial<Commit>): Commit {
@@ -75,5 +75,27 @@ describe("computeAuthors", () => {
 
     const totalShare = authors.reduce((s, a) => s + a.share, 0);
     expect(totalShare).toBeCloseTo(1, 5);
+  });
+});
+
+describe("computeRepos", () => {
+  it("groups commits by repo and sorts by churn", () => {
+    const commits = [
+      commit({ repo: "app", added: 10, removed: 0 }),
+      commit({ repo: "app", added: 5, removed: 5 }),
+      commit({ repo: "lib", added: 100, removed: 0 }),
+    ];
+    const repos = computeRepos(commits);
+    expect(repos[0]!.repo).toBe("lib");
+    expect(repos[0]!.churn).toBe(100);
+    const app = repos.find((r) => r.repo === "app")!;
+    expect(app.commits).toBe(2);
+    expect(app.churn).toBe(20);
+    expect(repos.reduce((s, r) => s + r.share, 0)).toBeCloseTo(1, 5);
+  });
+
+  it("labels missing repo as (unknown)", () => {
+    const repos = computeRepos([commit({ added: 1, removed: 0 })]);
+    expect(repos[0]!.repo).toBe("(unknown)");
   });
 });
