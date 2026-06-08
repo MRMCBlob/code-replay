@@ -4,6 +4,7 @@
   "description": "Terminal tool that tracks your local git commits and reports lines added/removed, authors, languages and activity over time.",
   "type": "module",
   "license": "MIT",
+  "author": "mrmcblob@proton.me",
   "keywords": [
     "git",
     "cli",

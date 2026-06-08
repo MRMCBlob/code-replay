@@ -21,8 +21,16 @@ export interface Commit {
   files: FileChange[];
   added: number;
   removed: number;
+  /** "Name <email>" strings from Co-authored-by trailers. */
+  coauthors: string[];
   /** Repo this commit came from (set when aggregating across many repos). */
   repo?: string;
+}
+
+/** Who "me" is, for filtering commits to the current user. */
+export interface Identity {
+  names: string[];
+  emails: string[];
 }
 
 /** Options controlling which commits git returns. */

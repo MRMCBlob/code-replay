@@ -1,12 +1,17 @@
 import { execa } from "execa";
-import type { Commit, FileChange, GitLogOptions } from "./types.js";
+import type { Commit, FileChange, GitLogOptions, Identity } from "./types.js";
 
 /** Record separator emitted before each commit header in the pretty format. */
 const REC = "\x1e"; // ASCII record separator
 /** Field separator inside a commit header. */
 const FS = "\x1f"; // ASCII unit separator
+/** Joins multiple Co-authored-by values within the single trailer field. */
+const GS = "\x1d"; // ASCII group separator
 
-const PRETTY = `${REC}%H${FS}%an${FS}%ae${FS}%aI${FS}%s`;
+// Last field = Co-authored-by trailer values, joined by GS (one field, no newlines).
+const PRETTY =
+  `${REC}%H${FS}%an${FS}%ae${FS}%aI${FS}%s${FS}` +
+  `%(trailers:key=Co-authored-by,valueonly,separator=${GS})`;
 
 export class NotAGitRepoError extends Error {
   constructor(public readonly cwd: string) {
@@ -42,8 +47,16 @@ export function parseGitLog(raw: string): Commit[] {
     if (!trimmed) continue;
     const lines = trimmed.split("\n");
     const header = lines[0] ?? "";
-    const [hash, authorName, authorEmail, date, ...subjectParts] =
-      header.split(FS);
+    const fields = header.split(FS);
+    const hash = fields[0];
+    const authorName = fields[1] ?? "";
+    const authorEmail = fields[2] ?? "";
+    const date = fields[3] ?? "";
+    const subject = fields[4] ?? "";
+    const coauthors = (fields[5] ?? "")
+      .split(GS)
+      .map((s) => s.trim())
+      .filter(Boolean);
     if (!hash) continue;
 
     const files: FileChange[] = [];
@@ -61,10 +74,11 @@ export function parseGitLog(raw: string): Commit[] {
 
     commits.push({
       hash,
-      authorName: authorName ?? "",
-      authorEmail: authorEmail ?? "",
-      date: date ?? "",
-      subject: subjectParts.join(FS),
+      authorName,
+      authorEmail,
+      date,
+      subject,
+      coauthors,
       files,
       added,
       removed,
@@ -130,4 +144,39 @@ export async function getCommits(opts: GitLogOptions): Promise<Commit[]> {
     maxBuffer: 256 * 1024 * 1024,
   });
   return parseGitLog(stdout);
+}
+
+async function gitConfig(
+  key: string,
+  cwd: string,
+  global: boolean,
+): Promise<string> {
+  const args = ["config"];
+  if (global) args.push("--global");
+  args.push("--get", key);
+  try {
+    const { stdout } = await execa("git", args, { cwd, reject: false });
+    return stdout.trim();
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Resolve the current user's git identity (user.name / user.email).
+ * `global: true` forces the machine-wide config (used for cross-repo --all);
+ * otherwise the repo's local config wins, falling back to global.
+ */
+export async function getGitIdentity(
+  cwd: string,
+  global = false,
+): Promise<Identity> {
+  const [email, name] = await Promise.all([
+    gitConfig("user.email", cwd, global),
+    gitConfig("user.name", cwd, global),
+  ]);
+  return {
+    emails: email ? [email] : [],
+    names: name ? [name] : [],
+  };
 }

@@ -31,6 +31,7 @@ describe("computeLanguages", () => {
         subject: "x",
         added: 0,
         removed: 0,
+        coauthors: [],
         files: [
           { added: 10, removed: 0, path: "a.ts", binary: false },
           { added: 4, removed: 1, path: "style.css", binary: false },
@@ -45,6 +46,7 @@ describe("computeLanguages", () => {
         subject: "y",
         added: 0,
         removed: 0,
+        coauthors: [],
         files: [{ added: 6, removed: 0, path: "a.ts", binary: false }],
       },
     ];

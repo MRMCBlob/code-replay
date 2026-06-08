@@ -12,6 +12,8 @@ function commit(p: Partial<Commit>): Commit {
     files: p.files ?? [],
     added: p.added ?? 0,
     removed: p.removed ?? 0,
+    coauthors: p.coauthors ?? [],
+    repo: p.repo,
   };
 }
 

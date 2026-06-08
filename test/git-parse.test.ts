@@ -7,6 +7,7 @@ import {
 
 const REC = "\x1e";
 const FS = "\x1f";
+const GS = "\x1d";
 
 function header(
   hash: string,
@@ -14,8 +15,9 @@ function header(
   email: string,
   date: string,
   subject: string,
+  coauthors: string[] = [],
 ): string {
-  return `${REC}${hash}${FS}${name}${FS}${email}${FS}${date}${FS}${subject}`;
+  return `${REC}${hash}${FS}${name}${FS}${email}${FS}${date}${FS}${subject}${FS}${coauthors.join(GS)}`;
 }
 
 describe("parseNumstatLine", () => {
@@ -88,5 +90,26 @@ describe("parseGitLog", () => {
 
   it("returns empty array for empty input", () => {
     expect(parseGitLog("")).toEqual([]);
+  });
+
+  it("parses Co-authored-by trailers", () => {
+    const raw =
+      header(
+        "abc123",
+        "Ada",
+        "ada@x.io",
+        "2024-01-01T10:00:00+00:00",
+        "pair work",
+        ["Bob <bob@x.io>", "Cleo <cleo@x.io>"],
+      ) + "\n4\t0\tsrc/a.ts\n";
+    const [c] = parseGitLog(raw);
+    expect(c!.coauthors).toEqual(["Bob <bob@x.io>", "Cleo <cleo@x.io>"]);
+  });
+
+  it("defaults coauthors to empty array", () => {
+    const raw =
+      header("h", "Ada", "ada@x.io", "2024-01-01T10:00:00+00:00", "solo") +
+      "\n1\t0\ta.ts\n";
+    expect(parseGitLog(raw)[0]!.coauthors).toEqual([]);
   });
 });

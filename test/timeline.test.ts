@@ -16,6 +16,7 @@ function c(date: string): Commit {
     added: 1,
     removed: 0,
     files: [],
+    coauthors: [],
   };
 }
 

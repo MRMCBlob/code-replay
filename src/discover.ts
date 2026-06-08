@@ -18,6 +18,10 @@ const SKIP_DIRS = new Set([
   ".venv",
   "venv",
   "__pycache__",
+  // AI/editor tool dirs that vendor their own git repos
+  ".cursor",
+  ".claude",
+  ".codex",
   // OS / system noise (mostly Windows + macOS)
   "AppData",
   "Application Data",
