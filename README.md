@@ -2,6 +2,8 @@
 
 > Terminal tool that replays your local **git** history and tells you what you actually shipped: lines added / removed / changed, who committed, which languages, and when you were active.
 
+### [Github Repo](https://github.com/MRMCBlob/code-replay)
+
 No accounts, no tokens, no network. It only reads the local git repo in front of you.
 
 **By default it shows only _your_ commits** — where you are the author or a `Co-authored-by` co-author, based on your `git config user.name` / `user.email`. Use `--everyone` to include all authors.
