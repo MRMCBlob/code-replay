@@ -31,6 +31,12 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Configure Node for GitHub Packages
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://npm.pkg.github.com'
+
       - name: Publish to GitHub Packages
         run: |
           npm pkg set name='@mrmcblob/code-replay'
