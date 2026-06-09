@@ -8,6 +8,9 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
 
@@ -23,6 +26,15 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm publish --no-git-checks
+      - name: Publish to npm
+        run: pnpm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to GitHub Packages
+        run: |
+          npm pkg set name='@mrmcblob/code-replay'
+          npm pkg set 'publishConfig.registry=https://npm.pkg.github.com'
+          pnpm publish --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

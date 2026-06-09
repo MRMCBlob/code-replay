@@ -50,6 +50,10 @@
     "typescript": "^5.7.3",
     "vitest": "^4.1.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MRMCBlob/code-replay.git"
+  },
   "publishConfig": {
     "access": "public"
   }
