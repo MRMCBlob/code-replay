@@ -1,6 +1,6 @@
 {
   "name": "code-replay",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Terminal tool that tracks your local git commits and reports lines added/removed, authors, languages and activity over time.",
   "type": "module",
   "license": "MIT",
