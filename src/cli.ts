@@ -3,7 +3,7 @@ import path from "node:path";
 import os from "node:os";
 import chalk from "chalk";
 import { Command } from "commander";
-import { getCommits, getGitIdentity, NotAGitRepoError } from "./git.js";
+import { getCommits, getGitIdentity, gitToplevel, NotAGitRepoError } from "./git.js";
 import { findGitRepos } from "./discover.js";
 import { filterByIdentity, isEmptyIdentity } from "./identity.js";
 import { clearCache, loadRepos, saveRepos } from "./cache.js";
@@ -225,11 +225,22 @@ async function resolveRepos(
   if (opts.cache && !opts.refresh) {
     const cached = await loadRepos(root, maxDepth, ttlMs);
     if (cached) {
-      process.stderr.write(
-        chalk.gray(`Using cached repo list (${cached.length} repos). `) +
-          chalk.gray("Pass --refresh to rescan.\n\n"),
-      );
-      return cached;
+      // Auto-refresh when run from a git repo the cache doesn't know about:
+      // a new repo has appeared under `root` since the last scan.
+      const newRepo = await uncachedCurrentRepo(root, cached);
+      if (newRepo) {
+        process.stderr.write(
+          chalk.gray(
+            `New git repo not in cache (${newRepo}) — forcing a fresh scan.\n\n`,
+          ),
+        );
+      } else {
+        process.stderr.write(
+          chalk.gray(`Using cached repo list (${cached.length} repos). `) +
+            chalk.gray("Pass --refresh to rescan.\n\n"),
+        );
+        return cached;
+      }
     }
   }
 
@@ -245,6 +256,24 @@ async function resolveRepos(
     await saveRepos(root, maxDepth, repos).catch(() => {});
   }
   return repos;
+}
+
+/**
+ * If the current working directory is inside a git repo that lives under
+ * `root` but is absent from `cached`, return its path — a signal that the
+ * cache is stale and a rescan is warranted. Otherwise return null.
+ */
+async function uncachedCurrentRepo(
+  root: string,
+  cached: string[],
+): Promise<string | null> {
+  const top = await gitToplevel(process.cwd());
+  if (!top) return null;
+  const rel = path.relative(root, top);
+  // Not under the scan root → out of scope, cache stays valid.
+  if (rel.startsWith("..") || path.isAbsolute(rel)) return null;
+  const known = new Set(cached.map((p) => path.resolve(p)));
+  return known.has(path.resolve(top)) ? null : top;
 }
 
 /** Run `fn` over `items` with at most `limit` concurrent executions. */

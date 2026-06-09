@@ -35,6 +35,25 @@ export async function isGitRepo(cwd: string): Promise<boolean> {
 }
 
 /**
+ * Return the absolute work-tree root for `cwd`, or null if `cwd` is not inside
+ * a git repository. Cheap check used to spot a repo missing from the cache.
+ */
+export async function gitToplevel(cwd: string): Promise<string | null> {
+  try {
+    const { stdout, exitCode } = await execa(
+      "git",
+      ["rev-parse", "--show-toplevel"],
+      { cwd, reject: false },
+    );
+    if (exitCode !== 0) return null;
+    const top = stdout.trim();
+    return top ? top : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Parse the raw stdout of `git log --numstat` (with our pretty format) into commits.
  * Kept pure and exported so it can be unit-tested without spawning git.
  */
