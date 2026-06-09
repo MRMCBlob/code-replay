@@ -1,9 +1,16 @@
 import process from "node:process";
+import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 import chalk from "chalk";
 import { Command } from "commander";
-import { getCommits, getGitIdentity, gitToplevel, NotAGitRepoError } from "./git.js";
+import {
+  getCommits,
+  getGitIdentity,
+  gitToplevel,
+  isGitRepo,
+  NotAGitRepoError,
+} from "./git.js";
 import { findGitRepos } from "./discover.js";
 import { filterByIdentity, isEmptyIdentity } from "./identity.js";
 import { clearCache, loadRepos, saveRepos } from "./cache.js";
@@ -68,7 +75,7 @@ program
   .option("--cache-ttl <hours>", "with --all: cache lifetime in hours", "168")
   .option("--clear-cache", "delete the cached repo list and exit")
   .option("--no-color", "disable colored output")
-  .action(async (repo: string, opts: CliOptions) => {
+  .action(async (repo: string, opts: CliOptions, command: Command) => {
     if (!opts.color) chalk.level = 0;
 
     if (opts.clearCache) {
@@ -80,12 +87,25 @@ program
     const top = Math.max(1, Number.parseInt(opts.top, 10) || 10);
 
     try {
+      // No repo argument and not inside a git repo → behave like --all
+      // instead of erroring out.
+      const repoGiven = command.args.length > 0;
+      let all = Boolean(opts.all);
+      if (!all && !repoGiven && !(await isGitRepo(path.resolve(repo)))) {
+        process.stderr.write(
+          chalk.gray(
+            "Not inside a git repo — scanning all repos on this machine (--all).\n",
+          ),
+        );
+        all = true;
+      }
+
       // Resolve "me" unless an explicit author or --everyone was given.
       let identity: Identity | undefined;
       if (!opts.everyone && !opts.author) {
         identity = await getGitIdentity(
-          opts.all ? path.resolve(opts.root ?? os.homedir()) : path.resolve(repo),
-          opts.all, // force global config for cross-repo mode
+          all ? path.resolve(opts.root ?? os.homedir()) : path.resolve(repo),
+          all, // force global config for cross-repo mode
         );
         if (isEmptyIdentity(identity)) {
           process.stderr.write(
@@ -102,7 +122,7 @@ program
         }
       }
 
-      const { commits, label, multi } = opts.all
+      const { commits, label, multi } = all
         ? await collectAll(opts, identity)
         : await collectSingle(repo, opts, identity);
 
@@ -269,11 +289,27 @@ async function uncachedCurrentRepo(
 ): Promise<string | null> {
   const top = await gitToplevel(process.cwd());
   if (!top) return null;
-  const rel = path.relative(root, top);
+  // Compare physical paths: git resolves symlinks in --show-toplevel
+  // (e.g. /tmp → /private/tmp on macOS) while the scan root and cached
+  // entries are lexical, so a raw string comparison misses real matches.
+  const [realTop, realRoot] = await Promise.all([
+    realpathSafe(top),
+    realpathSafe(root),
+  ]);
+  const rel = path.relative(realRoot, realTop);
   // Not under the scan root → out of scope, cache stays valid.
   if (rel.startsWith("..") || path.isAbsolute(rel)) return null;
-  const known = new Set(cached.map((p) => path.resolve(p)));
-  return known.has(path.resolve(top)) ? null : top;
+  const known = new Set(await Promise.all(cached.map(realpathSafe)));
+  return known.has(realTop) ? null : top;
+}
+
+/** realpath that falls back to a lexical resolve when the path is gone. */
+async function realpathSafe(p: string): Promise<string> {
+  try {
+    return await fs.realpath(p);
+  } catch {
+    return path.resolve(p);
+  }
 }
 
 /** Run `fn` over `items` with at most `limit` concurrent executions. */
