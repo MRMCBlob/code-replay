@@ -127,6 +127,8 @@ const commits = await getCommits({ cwd: process.cwd() });
 console.log(computeTotals(commits));
 console.log(computeLanguages(commits));
 ```
+## Tech stack:
+![NodeJs Badge](https://svgl-badge.vercel.app/api/Library/Node.js?theme=dark), ![TypeScript Badge](https://svgl-badge.vercel.app/api/Language/TypeScript?theme=dark), ![Spotify Badge](https://svgl-badge.vercel.app/api/Music/Spotify?theme=dark)
 
 ## How it works
 
