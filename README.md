@@ -2,7 +2,8 @@
 
 > Terminal tool that replays your local **git** history and tells you what you actually shipped: lines added / removed / changed, who committed, which languages, and when you were active.
 
-### [Github Repo](https://github.com/MRMCBlob/code-replay)
+## Tech stack:
+![NodeJs Badge](https://svgl-badge.vercel.app/api/Library/Node.js?theme=dark), ![TypeScript Badge](https://svgl-badge.vercel.app/api/Language/TypeScript?theme=dark), ![Spotify Badge](https://svgl-badge.vercel.app/api/Music/Spotify?theme=dark)
 
 No accounts, no tokens, no network. It only reads the local git repo in front of you.
 
@@ -127,8 +128,6 @@ const commits = await getCommits({ cwd: process.cwd() });
 console.log(computeTotals(commits));
 console.log(computeLanguages(commits));
 ```
-## Tech stack:
-![NodeJs Badge](https://svgl-badge.vercel.app/api/Library/Node.js?theme=dark), ![TypeScript Badge](https://svgl-badge.vercel.app/api/Language/TypeScript?theme=dark), ![Spotify Badge](https://svgl-badge.vercel.app/api/Music/Spotify?theme=dark)
 
 ## How it works
 
