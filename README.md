@@ -2,6 +2,11 @@
 
 > Terminal tool that replays your local **git** history and tells you what you actually shipped: lines added / removed / changed, who committed, which languages, and when you were active.
 
+## Install:
+```bash
+npm i -g code-replay
+```
+
 ## Tech stack:
 ![NodeJs Badge](https://svgl-badge.vercel.app/api/Library/Node.js?theme=dark), ![TypeScript Badge](https://svgl-badge.vercel.app/api/Language/TypeScript?theme=dark), ![Spotify Badge](https://svgl-badge.vercel.app/api/Music/Spotify?theme=dark)
 
